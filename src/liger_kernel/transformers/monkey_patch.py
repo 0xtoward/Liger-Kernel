@@ -2576,13 +2576,11 @@ def apply_liger_kernel_to_falcon_h1(
     from transformers.models.falcon_h1.modeling_falcon_h1 import FalconH1Model
 
     if rope:
-        logger.info("Apply liger rotary pos emb.")
         modeling_falcon_h1.apply_rotary_pos_emb = liger_rotary_pos_emb
     if rms_norm:
-        logger.info("Apply liger RMSNorm")
         modeling_falcon_h1.FalconH1RMSNorm = LigerRMSNorm
     if swiglu:
-        logger.info("Apply liger SwiGLU")
+        modeling_falcon_h1.FalconH1MLP = LigerFalconSwiGLUMLP
 
     if cross_entropy:
         logger.info("Apply liger cross entropy")
@@ -2608,7 +2606,7 @@ def apply_liger_kernel_to_falcon_h1(
 
         for decoder_layer in base_model.layers:
             if swiglu:
-                _patch_swiglu_module(decoder_layer.mlp, LigerFalconSwiGLUMLP)
+                _patch_swiglu_module(decoder_layer.feed_forward, LigerFalconSwiGLUMLP)
             if rms_norm:
                 _patch_rms_norm_module(decoder_layer.input_layernorm)
                 _patch_rms_norm_module(decoder_layer.pre_ff_layernorm)
